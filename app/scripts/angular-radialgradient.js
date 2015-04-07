@@ -484,7 +484,9 @@ angular.module("radialgradient.module",["colorpicker.module"])
               			//element.val(ngModel.$viewValue);
               			//render the $viewValue which is a radialgradient as the fill of another DOM element
               			//this is generally defined as a func in another controller passed to the isolated scope
-              			scope.runAfter();
+              			if(scope.runAfter){
+              				scope.runAfter();
+              			}
             		};
             		scope.$watch(attrs.ngModel, function(newVal) {
             			scope.rgdata = newVal;
