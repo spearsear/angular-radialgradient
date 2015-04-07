@@ -5,7 +5,10 @@ angular.module("radialgradient.module",["colorpicker.module"])
 			//require controller of the directive named ngModel
 			require: '?ngModel',
 			restrict: "EA",
-			scope: false,
+			scope: {
+				rgConfigured: '=ngModel',
+				runAfter: '&runAfter'
+			},
 			//required ngModel controller is supplied as an argiment
 			link: function(scope, element, attrs, ngModel){
 				//controller code: rgdata should've be in controller
@@ -220,6 +223,8 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					if(ngModel) {
         				//ngModel directive controller saves rgdata
              			ngModel.$setViewValue(scope.rgdata);
+             			ngModel.$render();
+             			//scope.runAfter();
             		}
 					scope.$apply();
 				});
@@ -322,6 +327,8 @@ angular.module("radialgradient.module",["colorpicker.module"])
   					if(ngModel) {
         				//ngModel directive controller saves rgdata
              			ngModel.$setViewValue(scope.rgdata);
+             			ngModel.$render();
+             			//scope.runAfter();
             		}
   					scope.$apply();
 				}
@@ -476,10 +483,8 @@ angular.module("radialgradient.module",["colorpicker.module"])
             		ngModel.$render = function () {
               			//element.val(ngModel.$viewValue);
               			//render the $viewValue which is a radialgradient as the fill of another DOM element
-              			//this is generally defined in ngModel viewFunc
-              			if(ngModel.viewFunc){ 
-              				ngModel.viewFunc();
-              			}
+              			//this is generally defined as a func in another controller passed to the isolated scope
+              			scope.runAfter();
             		};
             		scope.$watch(attrs.ngModel, function(newVal) {
             			scope.rgdata = newVal;
