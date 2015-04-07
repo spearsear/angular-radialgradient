@@ -5,6 +5,7 @@
 .rgchooser {
   top: 0;
   left: 0;
+  cursor: crosshair;
   z-index: 9999;
   display: none;
 }
@@ -88,9 +89,10 @@
   height: 276px;
 }
 .rgchooser .stopcolor-Ctrl{
+  cursor: pointer;
   padding-left: 2%;
 }
-.rgchooser .rgchooser-Ctrl:hover{
+.rgchooser circle.rgchooser-Ctrl:hover{
   cursor: pointer;
 }
 .rgchooser .stopcolor-Chooser .stopcolor.original{
