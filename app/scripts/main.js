@@ -1,6 +1,10 @@
 angular.module("rgDemoApp",["radialgradient.module"])
 	.controller("mainCtrl",function($scope){
 		//the configured result is stored in rgConfigured
+		$scope.viewFunc = function(){
+			//execute this func after rgChooser is configured
+			console.log("I am awake");
+		}
 		$scope.rgConfigured = {
 			width:276,
 			height:276,
