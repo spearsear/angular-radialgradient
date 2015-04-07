@@ -124,20 +124,21 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				scope.computeColorArray();
 
 				//directive code:
-				var target = element,
-					//target = angular.isDefined(attrs.rgchooserParent) ? elem.parent() : angular.element(document.body),
+				var //target = element,
+					//do not append rgChooserTemplate to element, insteaed append to body, otherwise Firefix mousedown event will fire even with stopPropogation
+					target = angular.isDefined(attrs.rgchooserParent) ? elem.parent() : angular.element(document.body),
 					position = angular.isDefined(attrs.rgchooserPosition) ? attrs.rgchooserPosition : 'bottom',
 					inline = angular.isDefined(attrs.rgchooserInline) ? attrs.rgchooserInline : false,
 					template = "<div class='rgchooser dropdown'>"
 					+ "<div class='dropdown-menu'>"
 					+ "<svg class='svg-Viewer' xmlns='http://www.w3.org/2000/svg'>"
 					+ "  <defs>"
-    				+ "    <radialGradient id='grad1' cx='{{rgdata.center.x}}' cy='{{rgdata.center.y}}' r='{{rgdata.radius}}' fx='{{rgdata.focal.x}}' fy='{{rgdata.focal.y}}' gradientTransform='{{ computeGradientTransform() }}' spreadMethod='pad'>"
+    				+ "    <radialGradient id='rg-grad-1' cx='{{rgdata.center.x}}' cy='{{rgdata.center.y}}' r='{{rgdata.radius}}' fx='{{rgdata.focal.x}}' fy='{{rgdata.focal.y}}' gradientTransform='{{ computeGradientTransform() }}' spreadMethod='pad'>"
     				+ "      <stop ng-repeat='stop in rgdata.stops' offset='{{stop.offset}}' style='{{ computeGradientStopStyle($index) }}'>"
     				+ "      </stop>"
     				+ "    </radialGradient>"
   					+ "  </defs>"
-					+ "  <rect x={{margin.left}} y={{margin.right}} width={{rgdata.width-margin.left-margin.right}} height={{rgdata.height-margin.top-margin.bottom}} fill='url(#grad1)' fill-opacity='{{rgdata.opacity}}'>"
+					+ "  <rect x={{margin.left}} y={{margin.right}} width={{rgdata.width-margin.left-margin.right}} height={{rgdata.height-margin.top-margin.bottom}} fill='url(#rg-grad-1)' fill-opacity='{{rgdata.opacity}}'>"
 					+ "  </rect>"
 					+ "</svg>"
 					+ "<div class='stopcolor-Ctrl'>"
@@ -157,11 +158,6 @@ angular.module("radialgradient.module",["colorpicker.module"])
           		}
 
 				target.append(rgChooserTemplate);
-
-          		rgChooserTemplate.on('mousedown', function (event) {
-            		event.stopPropagation();
-            		event.preventDefault();
-          		});
 
           		//setup and render rgChooser view in d3
 				if(attrs.stopcolor1 || attrs.stopcolor2){
@@ -211,9 +207,11 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				}
 
 				scope.$watch(function(){return scope.computeGradientTransform()}, function(value) {
-					//jquery lowercase gradientTransform to gradienttransform, neeed to convert it back, geez 
-        			//document.getElementById('grad1').setAttribute("gradientTransform", value);
-        			element.find('radialGradient')[0].setAttribute("gradientTransform", value);
+					//jquery lowercase gradientTransform to gradienttransform, need to convert it back, geez 
+        			//document.getElementById('rg-grad-1').setAttribute("gradientTransform", value);
+        			//either find by id or by tag, both works
+        			//$document.find('#rg-grad-1')[0].setAttribute("gradientTransform", value);
+        			$document.find('.rgchooser').find('radialGradient')[0].setAttribute("gradientTransform", value);
       			});
 
 				scope.$on("colorpicker-selected",function(event,data){
@@ -452,7 +450,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 
 				controlsEnterFunc();
 
-				//create a shape filled with #grad1 as demo
+				//create a shape filled with #rg-grad-1 as demo
 				svg.append("g")
 					.selectAll("rect.demo")
 					.data([{x:0.05,y:0.75,width:0.2,height:0.2}])
@@ -471,7 +469,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					.attr("height",function(d){
 						return d.height*scope.rgdata.height;
 					})
-					.attr("fill","url(#grad1)");
+					.attr("fill","url(#rg-grad-1)");
 
 				//after d3 setup
 				if(ngModel) {
@@ -570,6 +568,11 @@ angular.module("radialgradient.module",["colorpicker.module"])
           		} else {
             		showRgChooserTemplate();
           		}
+
+          		rgChooserTemplate.on('mousedown', function (event) {
+            		event.stopPropagation();
+            		event.preventDefault();
+          		});
 
           		var hideRgChooserTemplate = function() {
             		if (rgChooserTemplate.hasClass('rgchooser-visible')) {
