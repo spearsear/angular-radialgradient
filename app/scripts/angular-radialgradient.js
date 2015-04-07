@@ -489,7 +489,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
               			}
             		};
             		scope.$watch(attrs.ngModel, function(newVal) {
-            			if(newVal){
+            			if(angular.isDefined(newVal)){
             				scope.rgdata = newVal;
               				controlsUpdateFunc();
               			}
