@@ -3,7 +3,7 @@ angular.module("rgDemoApp",["radialgradient.module"])
 		//the configured result is stored in rgConfigured
 		$scope.viewFunc = function(){
 			//execute this func after rgChooser is configured
-			console.log("I am awake");
+			rg_eue_func();
 		}
 		$scope.rgConfigured = {
 			width:276,
@@ -55,4 +55,89 @@ angular.module("rgDemoApp",["radialgradient.module"])
 				{original:true,color:"#000000"}
 			]
 		};
+		$scope.shapes = [
+			{shape:'rect',pos:{x:30,y:30,width:40,height:80}},
+			{shape:'rect',pos:{x:80,y:30,width:40,height:80}},
+			{shape:'rect',pos:{x:130,y:30,width:40,height:80}}
+		];
+		//$scope.$watch('rgConfigured',function(newVal){
+		//	rg_eue_func();
+		//},true)
+
+
+		var svg = d3.select('.demoDrawing').select('svg');
+		var rgdata = [$scope.rgConfigured];
+
+		//make radialgradient according to rgConfigured
+		//enter/update/exit in one func
+		var rg_eue_func = function(){
+			console.log("eue called.")
+			var svg_defs;
+			if(svg.select('defs')[0][0]==null){
+				svg_defs = svg.append('defs');
+			}else{
+				svg_defs = svg.select('defs');
+			}
+			var rg = svg_defs.selectAll('radialGradient')
+					.data(rgdata);
+			//rg.exit().remove();
+			rg.enter()
+				.append('radialGradient')
+				.attr("id",function(d,i){
+					return 'rg'+(i+1);
+				})
+				.attr("gradientUnits","objectBoundingBox");
+			rg.attr("cx",function(d){
+					return d.center.x;
+				})
+				.attr("cy",function(d){
+					return d.center.y;
+				})
+				.attr("r",function(d){
+					return d.radius;
+				})
+				.attr("fx",function(d){
+					return d.focal.x;
+				})
+				.attr("fx",function(d){
+					return d.focal.y;
+				})
+				.attr("spreadMethod","pad")
+				.attr("gradientTransform",function(d){
+					return "rotate("+d.transform.rotate+","+d.center.x+","+d.center.y+") translate("+d.transform.translate.x+","+d.transform.translate.y+") scale("+d.transform.scale.x+","+d.transform.scale.y+")"
+				});
+
+			var rg_stops = rg.selectAll("stop")
+				.data($scope.rgConfigured.stops);
+			rg_stops.exit().remove();
+			rg_stops.enter()
+				.append("stop");
+			rg_stops.attr("offset",function(d){
+						return d.offset;
+					})
+					.attr("style",function(d){
+						return "stop-color:"+d.color+";stop-opacity:"+d.opacity;
+					});
+		};
+
+		//rg_eue_func();
+
+		svg.selectAll('rect')
+			.data($scope.shapes)
+			.enter()
+			.append('rect')
+			.attr("x",function(d){
+				return d.pos.x;
+			})
+			.attr("y",function(d){
+				return d.pos.y;
+			})
+			.attr("width",function(d){
+				return d.pos.width;
+			})
+			.attr("height",function(d){
+				return d.pos.height;
+			})
+			.attr("fill","url(#rg1)");
+
 	})
