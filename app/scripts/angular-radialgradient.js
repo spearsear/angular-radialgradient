@@ -1,5 +1,6 @@
 angular.module("radialgradient.module",["colorpicker.module"])
-	.directive("rgChooser",['$compile','$document','Helper',function($compile,$document,Helper){
+	//Helper is from colorpicker.module
+	.directive("rgChooser",['$rootScope','$compile','$document','Helper',function($rootScope,$compile,$document,Helper){
 		'use strict';
 		return {
 			//require controller of the directive named ngModel
@@ -28,7 +29,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 						scale: {
 							x: 1,
 							y: 1,
-							}
+						}
 					},
 					opacity: 0.6,
 					stops: [
@@ -92,6 +93,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					for(var i=0;i<newVal.length;i++){
 						if(newVal[i].color!=oldVal[i].color){
 							//the i-th color changed
+							//scope.colors_changed = true;
 							if(newVal[i].original){
 								//original stop color changed, update corresponding stops
 								for(var j=0;j<scope.rgdata.stops.length;j++){
@@ -105,10 +107,15 @@ angular.module("radialgradient.module",["colorpicker.module"])
 								scope.rgdata.stops.push({
 									offset: String(i/10), 
 									color: newVal[i].color, 
-									opacity: 1-i/10
+									opacity: scope.computeStopOpacity(i)
 								})
 								scope.sortStops();
 							}
+							if (ngModel) {
+        						//ngModel directive controller saves rgdata
+             					ngModel.$setViewValue(scope.rgdata);
+             					ngModel.$render();
+             				}
 						}
 						if(newVal[i].original!=oldVal[i].original){
 							if(!newVal[i].original){
@@ -119,8 +126,13 @@ angular.module("radialgradient.module",["colorpicker.module"])
 									}
 								}
 							}
+							if (ngModel) {
+        						//ngModel directive controller saves rgdata
+             					ngModel.$setViewValue(scope.rgdata);
+             					ngModel.$render();
+             				}
 						}
-					}
+            		}
 					scope.computeColorArray();
 				},true);
 
@@ -141,7 +153,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
     				+ "      </stop>"
     				+ "    </radialGradient>"
   					+ "  </defs>"
-					+ "  <rect x={{margin.left}} y={{margin.right}} width={{rgdata.width-margin.left-margin.right}} height={{rgdata.height-margin.top-margin.bottom}} fill='url(#rg-grad-1)' fill-opacity='{{rgdata.opacity}}'>"
+					+ "  <rect x={{margin.left}} y={{margin.right}} width={{rgdata.width-margin.left-margin.right}} height={{rgdata.height-margin.top-margin.bottom}} fill='url(#rg-grad-1)'>"
 					+ "  </rect>"
 					+ "</svg>"
 					+ "<div class='stopcolor-Ctrl'>"
@@ -176,6 +188,11 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				scope.computeGradientTransform = function(){
 					//return "rotate(41.17887931034482,0.47918701171875,0.50390625) translate(0,0.3556665880926724) scale(1,0.2941810344827587)";
 					return "rotate("+scope.rgdata.transform.rotate+","+scope.rgdata.center.x+","+scope.rgdata.center.y+") translate("+scope.rgdata.transform.translate.x+","+scope.rgdata.transform.translate.y+") scale("+scope.rgdata.transform.scale.x+","+scope.rgdata.transform.scale.y+")";
+				};
+
+				scope.computeStopOpacity = function(i){
+					var opac = (1-i/10)-(1-scope.rgdata.opacity)*(1-i/10);
+					return opac<0 ? 0 : opac;
 				};
 
 				scope.computeGradientStopStyle = function(i){
@@ -217,7 +234,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
         			$document.find('.rgchooser').find('radialGradient')[0].setAttribute("gradientTransform", value);
       			});
 
-				scope.$on("colorpicker-selected",function(event,data){
+				$rootScope.$on("colorpicker-selected",function(event,data){
 					//one of the stop colors changed
 					scope.colors_changed = true;
 					if(ngModel) {
@@ -228,12 +245,12 @@ angular.module("radialgradient.module",["colorpicker.module"])
             		}
 					scope.$apply();
 				});
-
+				
 				var radius_scale = d3.scale.linear()
 					.domain([0,1])
-					.range([0,1]);
+					.range([0,2]);
 				var radius_scale_reverse = d3.scale.linear()
-					.domain([0,1])
+					.domain([0,2])
 					.range([0,1]);
 
 				var opacity_scale = d3.scale.linear()
@@ -283,6 +300,9 @@ angular.module("radialgradient.module",["colorpicker.module"])
   							}
   							if(d.name == 'opacity'){
   								scope.rgdata.opacity = opacity_scale(d.x);
+  								for(var i=0;i<scope.rgdata.stops.length;i++){
+  									scope.rgdata.stops[i].opacity = scope.computeStopOpacity(scope.rgdata.stops[i].offset*10);
+  								}
   							}
   							if(d.name == 'rotate'){
   								scope.rgdata.transform.rotate = rotate_scale(d.x);
@@ -344,6 +364,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				
 				var controlsEnterFunc = function(){
 					svg.append("g")
+						.attr("class","rgchooser-Ctrls")
 						.selectAll("circle")
 						.data([
 							$.extend(scope.rgdata.center,{name:'center',ctrl_color:'orange'}),
@@ -391,6 +412,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 
 					//control lines at edge, hard code edge at 0.02 and 0.98 inset from svg border
 					svg.append("g")
+						.attr("class","rgchooser-Ctrl-Lines")
 						.selectAll("line")
 						.data([
 							{name:'left-edge',start:{x:0.02,y:0.02},end:{x:0.02,y:0.98}},
@@ -420,7 +442,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				};//end controlsEnterFunc
 
 				var controlsUpdateFunc = function(){
-					svg.append("g")
+					svg.select("g.rgchooser-Ctrls")
 						.selectAll("circle")
 						.data([
 							$.extend(scope.rgdata.center,{name:'center',ctrl_color:'orange'}),
@@ -431,7 +453,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 							$.extend({x:rotate_scale_reverse(scope.rgdata.transform.rotate),y:0.98},{name:'rotate',ctrl_color:'yellow'}),
 							$.extend({x:opacity_scale_reverse(scope.rgdata.opacity),y:0.02},{name:'opacity',ctrl_color:'purple'}),
 						])
-						.append("circle")
+						//.append("circle")
 						.attr("class",function(d){
 							return d.name + " rgchooser-Ctrl";
 						})
