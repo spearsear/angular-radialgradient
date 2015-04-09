@@ -57,36 +57,37 @@ angular.module("rgDemoApp",["radialgradient.module"])
 		};
 		$scope.shapes = [
 			{shape:'rect',pos:{x:30,y:30,width:40,height:80}},
-			{shape:'rect',pos:{x:80,y:30,width:40,height:80}},
-			{shape:'rect',pos:{x:130,y:30,width:40,height:80}}
+			{shape:'rect',pos:{x:100,y:30,width:80,height:160}},
+			{shape:'rect',pos:{x:200,y:30,width:320,height:640}}
 		];
 		//$scope.$watch('rgConfigured',function(newVal){
 		//	rg_eue_func();
 		//},true)
 
 
-		var svg = d3.select('.demoDrawing').select('svg');
+		var svg = d3.select('.demoDrawing').append('svg').attr("width",1000).attr("height",1000);
 		var rgdata = [$scope.rgConfigured];
 
-		//make radialgradient according to rgConfigured
-		//enter/update/exit in one func
+		//enter/update radialgradient and enter/update/exit stops according to rgConfigured all in one func
 		var rg_eue_func = function(){
-			console.log("eue called.")
-			var svg_defs;
+			var svg_defs, rg;
 			if(svg.select('defs')[0][0]==null){
 				svg_defs = svg.append('defs');
+				rg = svg_defs.selectAll('radialGradient').data(rgdata);
 			}else{
 				svg_defs = svg.select('defs');
+				//webkit select radialGradient bug workaround using a class name:  
+				//http://stackoverflow.com/questions/18298318/unable-to-select-lineargradient-with-d3-js-in-chrome
+				rg = svg_defs.selectAll('.rg').data(rgdata);
 			}
-			var rg = svg_defs.selectAll('radialGradient')
-					.data(rgdata);
-			//rg.exit().remove();
+
 			rg.enter()
 				.append('radialGradient')
 				.attr("id",function(d,i){
-					return 'rg'+(i+1);
+					return 'rg'+i;
 				})
-				.attr("gradientUnits","objectBoundingBox");
+				.attr("class","rg");
+
 			rg.attr("cx",function(d){
 					return d.center.x;
 				})
@@ -99,7 +100,7 @@ angular.module("rgDemoApp",["radialgradient.module"])
 				.attr("fx",function(d){
 					return d.focal.x;
 				})
-				.attr("fx",function(d){
+				.attr("fy",function(d){
 					return d.focal.y;
 				})
 				.attr("spreadMethod","pad")
@@ -113,14 +114,12 @@ angular.module("rgDemoApp",["radialgradient.module"])
 			rg_stops.enter()
 				.append("stop");
 			rg_stops.attr("offset",function(d){
-						return d.offset;
-					})
-					.attr("style",function(d){
-						return "stop-color:"+d.color+";stop-opacity:"+d.opacity;
-					});
+					return d.offset;
+				})
+				.attr("style",function(d){
+					return "stop-color:"+d.color+";stop-opacity:"+d.opacity;
+				});
 		};
-
-		//rg_eue_func();
 
 		svg.selectAll('rect')
 			.data($scope.shapes)
@@ -138,6 +137,15 @@ angular.module("rgDemoApp",["radialgradient.module"])
 			.attr("height",function(d){
 				return d.pos.height;
 			})
-			.attr("fill","url(#rg1)");
+			.attr("fill","url(#rg0)")
+			//opacity should be handled in radialgradient
+			//.attr("fill-opacity",function(d){
+			//	return $scope.rgConfigured.opacity;
+			//})
+			.transition()
+			.duration(20000)
+			.attr("x",function(d){
+				return d.pos.x+300;
+			});
 
 	})
