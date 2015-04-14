@@ -5,7 +5,8 @@ angular.module("rgDemoApp",["radialgradient.module"])
 			//execute this func after rgChooser is configured
 			rg_eue_func();
 		}
-		$scope.rgConfigured = {
+		$scope.rgConfigured = {"width":276,"height":276,"center":{"x":0.5036231884057971,"y":0.8623188405797102,"name":"center","ctrl_color":"orange"},"focal":{"x":0.4963768115942029,"y":0.009130434782608698,"name":"focal","ctrl_color":"pink"},"radius":0.15217391304347827,"transform":{"rotate":0,"translate":{"x":0,"y":0,"name":"translate","ctrl_color":"blue"},"scale":{"x":1,"y":1,"name":"scale","ctrl_color":"red"}},"opacity":0.8572463768115942,"stops":[{"offset":"0","color":"rgb(72,18,227)","opacity":0.8572463768115942},{"offset":"0.4","color":"rgb(18,48,153)","opacity":0.5143478260869565},{"offset":"0.9","color":"rgb(64,76,122)","opacity":0.0857246376811594},{"offset":"1","color":"rgb(37,56,122)","opacity":0}],"colors":[{"original":true,"color":"#4812e3"},{"original":false,"color":"#3b1ad1"},{"original":false,"color":"#2d21be"},{"original":false,"color":"#2029ac"},{"original":true,"color":"#123099"},{"original":false,"color":"#1b3693"},{"original":false,"color":"#243b8d"},{"original":false,"color":"#2e4186"},{"original":false,"color":"#374680"},{"original":true,"color":"#404c7a"},{"original":true,"color":"#25387a"}]};
+		$scope.rgConfigured2 = {
 			width:276,
 			height:276,
 			center:{
@@ -121,31 +122,49 @@ angular.module("rgDemoApp",["radialgradient.module"])
 				});
 		};
 
-		svg.selectAll('rect')
-			.data($scope.shapes)
-			.enter()
-			.append('rect')
-			.attr("x",function(d){
-				return d.pos.x;
-			})
-			.attr("y",function(d){
-				return d.pos.y;
-			})
-			.attr("width",function(d){
-				return d.pos.width;
-			})
-			.attr("height",function(d){
-				return d.pos.height;
-			})
-			.attr("fill","url(#rg0)")
-			//opacity should be handled in radialgradient
-			//.attr("fill-opacity",function(d){
-			//	return $scope.rgConfigured.opacity;
-			//})
-			.transition()
-			.duration(20000)
-			.attr("x",function(d){
-				return d.pos.x+300;
-			});
+		var rotate_degree;
+		var demo = function(){
+			var rotate_degree_old = rotate_degree;
+			if(!rotate_degree){
+				rotate_degree = 90;
+			}else{
+				if(rotate_degree == 90 || rotate_degree == 180){
+					rotate_degree = -90;
+				}else{
+					rotate_degree = 90;
+				}
+			}
+			var shapes = svg.selectAll('rect')
+				.data($scope.shapes)
+				.enter()
+				.append('rect')
+				.attr("class","shape");
 
+			svg.selectAll('rect').attr("x",function(d){
+					return d.pos.x;
+				})
+				.attr("y",function(d){
+					return d.pos.y;
+				})
+				.attr("width",function(d){
+					return d.pos.width;
+				})
+				.attr("height",function(d){
+					return d.pos.height;
+				})
+				.attr("fill","url(#rg0)");
+
+			svg.selectAll('rect')
+				.transition()
+				.duration(2000)
+				.attrTween("transform", function(d, i, a) {
+    				var i = d3.interpolateNumber(rotate_degree_old, rotate_degree);
+    				var rx = d.pos.x + d.pos.width/2,
+    					ry = d.pos.y;
+    				return function(t) {
+      					return "rotate(" + (i(t)) + " " + rx + " " + ry + ")";
+    				};
+  				});
+		}//end demo
+		setInterval(demo,2000);
 	})
