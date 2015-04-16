@@ -162,7 +162,9 @@ angular.module("rgDemoApp",["radialgradient.module"])
     				var rx = d.pos.x + d.pos.width/2,
     					ry = d.pos.y;
     				return function(t) {
-      					return "rotate(" + (i(t)) + " " + rx + " " + ry + ")";
+    					var rotate = i(t);
+    					rotate = isNaN(rotate)? 0 : rotate;
+      					return "rotate(" + rotate + " " + rx + " " + ry + ")";
     				};
   				});
 		}//end demo
