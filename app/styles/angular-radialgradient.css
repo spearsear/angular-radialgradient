@@ -95,6 +95,11 @@
 .rgchooser circle.rgchooser-Ctrl:hover{
   cursor: pointer;
 }
+.rgchooser .rgchooser-Reset{
+  cursor: pointer;
+  display: inline-block;
+  width: 5px;
+}
 .rgchooser .stopcolor-Chooser .stopcolor.original{
   border: solid;
   border-color: gray;
