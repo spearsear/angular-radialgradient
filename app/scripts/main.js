@@ -67,11 +67,11 @@ angular.module("rgDemoApp",["radialgradient.module"])
 
 
 		var svg = d3.select('.demoDrawing').append('svg').attr("width",1000).attr("height",1000);
-		var rgdata = [$scope.rgConfigured];
 
 		//enter/update radialgradient and enter/update/exit stops according to rgConfigured all in one func
 		var rg_eue_func = function(){
 			var svg_defs, rg;
+			var rgdata = [$scope.rgConfigured];
 			if(svg.select('defs')[0][0]==null){
 				svg_defs = svg.append('defs');
 				rg = svg_defs.selectAll('radialGradient').data(rgdata);
