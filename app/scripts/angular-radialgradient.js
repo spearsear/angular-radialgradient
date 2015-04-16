@@ -37,12 +37,16 @@ angular.module("radialgradient.module",["colorpicker.module"])
 						{offset: '1', color: "rgb(0,0,0)", opacity: 0}
 					]
 				};
-
 				scope.rgdata.colors = [];
 				scope.colors_changed = false;
 				scope.num_colors = 11;  //number of control colors to change stop color
+				scope.num_temps = 4;    //keep 4 temp rgdata
+				scope.rgdata_temps = [];
 
 				scope.computeColorArray = function(){
+					if(!scope.rgdata.colors){
+						scope.rgdata.colors = [];
+					}
 					scope.rgdata.colors.splice(0,scope.rgdata.colors.length);
 					var colors = [];
 					var offsets = [];
@@ -88,7 +92,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				scope.$watch("rgdata.colors",function(newVal,oldVal){
 					if(!scope.colors_changed){
 						return false;
-					} 
+					}
 					scope.colors_changed = false;
 					for(var i=0;i<newVal.length;i++){
 						if(newVal[i].color!=oldVal[i].color){
@@ -136,6 +140,26 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					scope.computeColorArray();
 				},true);
 
+				scope.$watch(function(){return scope.computeGradientTransform()}, function(value) {
+					//jquery lowercase gradientTransform to gradienttransform, need to convert it back, geez 
+        			//document.getElementById('rg-grad-1').setAttribute("gradientTransform", value);
+        			//either find by id or by tag, both works
+        			//$document.find('#rg-grad-1')[0].setAttribute("gradientTransform", value);
+        			$document.find('.rgchooser').find('radialGradient')[0].setAttribute("gradientTransform", value);
+      			});
+
+				$rootScope.$on("colorpicker-selected",function(event,data){
+					//one of the stop colors changed
+					scope.colors_changed = true;
+					if(ngModel) {
+        				//ngModel directive controller saves rgdata
+             			ngModel.$setViewValue(scope.rgdata);
+             			ngModel.$render();
+             			//scope.runAfter();
+            		}
+					scope.$apply();
+				});
+
 				scope.computeColorArray();
 
 				//directive code:
@@ -159,11 +183,14 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					+ "<div class='stopcolor-Ctrl'>"
 					+ "  <div class='stopcolor-Chooser'>"
 					+ "    <div ng-repeat='color in rgdata.colors' class='stopcolor {{stopColorClass(color)}}' colorpicker='rgb' colorpicker-close-on-select colorpicker-position='bottom' ng-model='rgdata.colors[$index].color' style='{{ computeStopColorStyle($index) }}'></div>"
+					+ "		<div class='rgchooser-Reset' ng-click='resetRgChooser()'>{{ computeRgdataIndexInTemps() }}</div>"
 					+ "  </div>"
 					+ "  <div class='stopcolor-ToggleStop rgchooser-Ctrl'>"
 					+ "    <div ng-repeat='color in rgdata.colors' class='stopcolor {{stopColorClass(color)}}' ng-click=' toggleStopColorOriginal($index) ' style='{{ computeStopColorToggleStyle($index) }}'></div>"
 					+ "  </div>"
-					+ "</div></div></div>",
+					+ "</div>"
+					//+ "<div class='rgchooser-Reset' ng-click='resetRgChooser()'>Reset</div>"
+					+ "</div></div>",
 					rgChooserTemplate = angular.element(template);
 
 				$compile(rgChooserTemplate)(scope);
@@ -192,7 +219,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 
 				scope.computeStopOpacity = function(i){
 					var opac = (1-i/10)-(1-scope.rgdata.opacity)*(1-i/10);
-					return opac<0 ? 0 : opac;
+					return opac<0 ? 0.1 : opac;
 				};
 
 				scope.computeGradientStopStyle = function(i){
@@ -224,28 +251,47 @@ angular.module("radialgradient.module",["colorpicker.module"])
 
 				scope.stopColorClass = function(color){
 					return color.original? 'original' : 'interpreted';
+				};
+
+				scope.inArray = function(obj,arr){
+					var inarr = false;
+					for(var i=0;i<arr.length;i++){
+						if(angular.equals(obj,arr[i])){
+							inarr=true;
+							break;
+						}
+					}
+					return inarr;
 				}
 
-				scope.$watch(function(){return scope.computeGradientTransform()}, function(value) {
-					//jquery lowercase gradientTransform to gradienttransform, need to convert it back, geez 
-        			//document.getElementById('rg-grad-1').setAttribute("gradientTransform", value);
-        			//either find by id or by tag, both works
-        			//$document.find('#rg-grad-1')[0].setAttribute("gradientTransform", value);
-        			$document.find('.rgchooser').find('radialGradient')[0].setAttribute("gradientTransform", value);
-      			});
 
-				$rootScope.$on("colorpicker-selected",function(event,data){
-					//one of the stop colors changed
-					scope.colors_changed = true;
+				scope.computeRgdataIndexInTemps = function(){
+					for(var i=0;i<scope.rgdata_temps.length;i++){
+						if(angular.equals(scope.rgdata,scope.rgdata_temps[i])){
+							return i;
+						}
+					}
+					return 9;
+				};
+
+				scope.resetRgChooser = function(){
+					//rgdata-temps saves all versions of rgdata being worked on, including rgdata_default
+					if(!scope.inArray(scope.rgdata_default,scope.rgdata_temps)){
+						scope.rgdata_temps.push(angular.copy(scope.rgdata_default));
+					}
+					//cycle thru items in rgdata_temps to rgdata
+					var index = scope.computeRgdataIndexInTemps();
+					var index_next = index == scope.rgdata_temps.length-1? 0 : index+1;
+					scope.rgdata = scope.rgdata_temps[index_next];
+					scope.computeColorArray();
+					controlsUpdateFunc();
 					if(ngModel) {
         				//ngModel directive controller saves rgdata
              			ngModel.$setViewValue(scope.rgdata);
              			ngModel.$render();
-             			//scope.runAfter();
             		}
-					scope.$apply();
-				});
-				
+				};
+
 				var radius_scale = d3.scale.linear()
 					.domain([0,1])
 					.range([0,2]);
@@ -310,8 +356,14 @@ angular.module("radialgradient.module",["colorpicker.module"])
   							if(d.name == 'center' || d.name == 'focal'){
   								scope.rgdata[d.name].x = d.x;
   							}
-  							if(d.name == 'translate' || d.name == 'scale'){
+  							/*if(d.name == 'translate' || d.name == 'scale'){
   								scope.rgdata.transform[d.name].x = d.x;
+  							}*/
+  							if(d.name == 'translate'){
+  								scope.rgdata.transform[d.name].x = d.x - 0.45;
+  							}
+  							if(d.name == 'scale'){
+  								scope.rgdata.transform[d.name].x = d.x + 0.45;
   							}
   							return x_new;
   						})
@@ -339,8 +391,14 @@ angular.module("radialgradient.module",["colorpicker.module"])
   							if(d.name == 'center' || d.name == 'focal'){
   								scope.rgdata[d.name].y = d.y;
   							}
-  							if(d.name == 'translate' || d.name == 'scale'){
+  							/*if(d.name == 'translate' || d.name == 'scale'){
   								scope.rgdata.transform[d.name].y = d.y;
+  							}*/
+  							if(d.name == 'translate'){
+  								scope.rgdata.transform[d.name].y = d.y - 0.45;
+  							}
+  							if(d.name == 'scale'){
+  								scope.rgdata.transform[d.name].y = d.y + 0.45;
   							}
   							return y_new;
   						});
@@ -382,18 +440,18 @@ angular.module("radialgradient.module",["colorpicker.module"])
 						})
 						.attr("cx",function(d){
 							if(d.name=='translate'){
-								return scope.rgdata.width*(d.x+0.05);
+								return scope.rgdata.width*(d.x+0.45);
 							}else if(d.name=='scale'){
-								return scope.rgdata.width*(d.x-0.05);
+								return scope.rgdata.width*(d.x-0.45);
 							}else{
 								return scope.rgdata.width*d.x;
 							}
 						})
 						.attr("cy",function(d){
 							if(d.name=='translate'){
-								return scope.rgdata.height*(d.y+0.05);
+								return scope.rgdata.height*(d.y+0.45);
 							}else if(d.name=='scale'){
-								return scope.rgdata.height*(d.y-0.05);
+								return scope.rgdata.height*(d.y-0.45);
 							}else{
 								return scope.rgdata.height*d.y;
 							}
@@ -459,18 +517,18 @@ angular.module("radialgradient.module",["colorpicker.module"])
 						})
 						.attr("cx",function(d){
 							if(d.name=='translate'){
-								return scope.rgdata.width*(d.x+0.05);
+								return scope.rgdata.width*(d.x+0.45);
 							}else if(d.name=='scale'){
-								return scope.rgdata.width*(d.x-0.05);
+								return scope.rgdata.width*(d.x-0.45);
 							}else{
 								return scope.rgdata.width*d.x;
 							}
 						})
 						.attr("cy",function(d){
 							if(d.name=='translate'){
-								return scope.rgdata.height*(d.y+0.05);
+								return scope.rgdata.height*(d.y+0.45);
 							}else if(d.name=='scale'){
-								return scope.rgdata.height*(d.y-0.05);
+								return scope.rgdata.height*(d.y-0.45);
 							}else{
 								return scope.rgdata.height*d.y;
 							}
@@ -501,6 +559,11 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					.attr("fill","url(#rg-grad-1)");
 
 				//after d3 setup
+				//make a copy we can reset to
+				scope.rgdata_default = angular.copy(scope.rgdata);
+				if(scope.rgdata_temps.length==0){
+					scope.rgdata_temps.push(angular.copy(scope.rgdata_default));
+				}
 				if(ngModel) {
             		ngModel.$render = function () {
               			//element.val(ngModel.$viewValue);
@@ -513,9 +576,18 @@ angular.module("radialgradient.module",["colorpicker.module"])
             		scope.$watch(attrs.ngModel, function(newVal) {
             			if(angular.isDefined(newVal)){
             				scope.rgdata = newVal;
+            				//save a few versions of rgdata
+            				if(scope.rgdata_temps.length<2 || !scope.inArray(scope.rgdata,scope.rgdata_temps)){
+            					scope.rgdata_temps.push(scope.rgdata);
+            				}
               				controlsUpdateFunc();
               			}
             		});
+          		}else{
+          			//save a few versions of rgdata
+          			if(scope.rgdata_temps.length<2 || !scope.inArray(scope.rgdata,scope.rgdata_temps)){
+            			scope.rgdata_temps.push(scope.rgdata);
+            		}
           		}
 
           		element.on('$destroy', function() {
