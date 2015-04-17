@@ -1,6 +1,6 @@
 angular.module("radialgradient.module",["colorpicker.module"])
 	//Helper is from colorpicker.module
-	.directive("rgChooser",['$rootScope','$compile','$document','Helper',function($rootScope,$compile,$document,Helper){
+	.directive("rgChooser",['$window','$rootScope','$compile','$document','Helper',function($window,$rootScope,$compile,$document,Helper){
 		'use strict';
 		return {
 			//require controller of the directive named ngModel
@@ -89,6 +89,10 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					})
 				};
 
+				scope.getFillUrl = function(){
+					return "url("+$window.location+"#rg-grad-1)";
+				}
+
 				scope.$watch("rgdata.colors",function(newVal,oldVal){
 					if(!scope.colors_changed){
 						return false;
@@ -140,13 +144,14 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					scope.computeColorArray();
 				},true);
 
+				/* this watch is only needed when jquery is loaded, jqlite does not need this
 				scope.$watch(function(){return scope.computeGradientTransform()}, function(value) {
 					//jquery lowercase gradientTransform to gradienttransform, need to convert it back, geez 
         			//document.getElementById('rg-grad-1').setAttribute("gradientTransform", value);
         			//either find by id or by tag, both works
         			//$document.find('#rg-grad-1')[0].setAttribute("gradientTransform", value);
         			$document.find('.rgchooser').find('radialGradient')[0].setAttribute("gradientTransform", value);
-      			});
+      			});*/
 
 				$rootScope.$on("colorpicker-selected",function(event,data){
 					//one of the stop colors changed
@@ -177,7 +182,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
     				+ "      </stop>"
     				+ "    </radialGradient>"
   					+ "  </defs>"
-					+ "  <rect x={{margin.left}} y={{margin.right}} width={{rgdata.width-margin.left-margin.right}} height={{rgdata.height-margin.top-margin.bottom}} fill='url(#rg-grad-1)'>"
+					+ "  <rect x={{margin.left}} y={{margin.right}} width={{rgdata.width-margin.left-margin.right}} height={{rgdata.height-margin.top-margin.bottom}} fill='{{ getFillUrl() }}'>"
 					+ "  </rect>"
 					+ "</svg>"
 					+ "<div class='stopcolor-Ctrl'>"
@@ -425,13 +430,13 @@ angular.module("radialgradient.module",["colorpicker.module"])
 						.attr("class","rgchooser-Ctrls")
 						.selectAll("circle")
 						.data([
-							$.extend(scope.rgdata.center,{name:'center',ctrl_color:'orange'}),
-							$.extend(scope.rgdata.focal,{name:'focal',ctrl_color:'pink'}),
-							$.extend(scope.rgdata.transform.translate,{name:'translate',ctrl_color:'blue'}),
-							$.extend(scope.rgdata.transform.scale,{name:'scale',ctrl_color:'red'}),
-							$.extend({x:0.02,y:radius_scale_reverse(scope.rgdata.radius)},{name:'radius',ctrl_color:'green'}),
-							$.extend({x:rotate_scale_reverse(scope.rgdata.transform.rotate),y:0.98},{name:'rotate',ctrl_color:'yellow'}),
-							$.extend({x:opacity_scale_reverse(scope.rgdata.opacity),y:0.02},{name:'opacity',ctrl_color:'purple'}),
+							angular.extend(scope.rgdata.center,{name:'center',ctrl_color:'orange'}),
+							angular.extend(scope.rgdata.focal,{name:'focal',ctrl_color:'pink'}),
+							angular.extend(scope.rgdata.transform.translate,{name:'translate',ctrl_color:'blue'}),
+							angular.extend(scope.rgdata.transform.scale,{name:'scale',ctrl_color:'red'}),
+							angular.extend({x:0.02,y:radius_scale_reverse(scope.rgdata.radius)},{name:'radius',ctrl_color:'green'}),
+							angular.extend({x:rotate_scale_reverse(scope.rgdata.transform.rotate),y:0.98},{name:'rotate',ctrl_color:'yellow'}),
+							angular.extend({x:opacity_scale_reverse(scope.rgdata.opacity),y:0.02},{name:'opacity',ctrl_color:'purple'}),
 						])
 						.enter()
 						.append("circle")
@@ -503,13 +508,13 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					svg.select("g.rgchooser-Ctrls")
 						.selectAll("circle")
 						.data([
-							$.extend(scope.rgdata.center,{name:'center',ctrl_color:'orange'}),
-							$.extend(scope.rgdata.focal,{name:'focal',ctrl_color:'pink'}),
-							$.extend(scope.rgdata.transform.translate,{name:'translate',ctrl_color:'blue'}),
-							$.extend(scope.rgdata.transform.scale,{name:'scale',ctrl_color:'red'}),
-							$.extend({x:0.02,y:radius_scale_reverse(scope.rgdata.radius)},{name:'radius',ctrl_color:'green'}),
-							$.extend({x:rotate_scale_reverse(scope.rgdata.transform.rotate),y:0.98},{name:'rotate',ctrl_color:'yellow'}),
-							$.extend({x:opacity_scale_reverse(scope.rgdata.opacity),y:0.02},{name:'opacity',ctrl_color:'purple'}),
+							angular.extend(scope.rgdata.center,{name:'center',ctrl_color:'orange'}),
+							angular.extend(scope.rgdata.focal,{name:'focal',ctrl_color:'pink'}),
+							angular.extend(scope.rgdata.transform.translate,{name:'translate',ctrl_color:'blue'}),
+							angular.extend(scope.rgdata.transform.scale,{name:'scale',ctrl_color:'red'}),
+							angular.extend({x:0.02,y:radius_scale_reverse(scope.rgdata.radius)},{name:'radius',ctrl_color:'green'}),
+							angular.extend({x:rotate_scale_reverse(scope.rgdata.transform.rotate),y:0.98},{name:'rotate',ctrl_color:'yellow'}),
+							angular.extend({x:opacity_scale_reverse(scope.rgdata.opacity),y:0.02},{name:'opacity',ctrl_color:'purple'}),
 						])
 						//.append("circle")
 						.attr("class",function(d){
@@ -556,7 +561,11 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					.attr("height",function(d){
 						return d.height*scope.rgdata.height;
 					})
-					.attr("fill","url(#rg-grad-1)");
+					//.attr("fill","url(#rg-grad-1)");
+					//.attr("fill","url("+$window.location+"#rg-grad-1)");
+					.attr("fill",function(){
+						return scope.getFillUrl();
+					})
 
 				//after d3 setup
 				//make a copy we can reset to
