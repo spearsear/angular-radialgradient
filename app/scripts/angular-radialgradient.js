@@ -155,7 +155,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
       				});
 				}
 
-				$rootScope.$on("colorpicker-selected",function(event,data){
+				scope.$on("colorpicker-selected",function(event,data){
 					//one of the stop colors changed
 					scope.colors_changed = true;
 					if(ngModel) {
@@ -196,7 +196,6 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					+ "    <div ng-repeat='color in rgdata.colors' class='stopcolor {{stopColorClass(color)}}' ng-click=' toggleStopColorOriginal($index) ' style='{{ computeStopColorToggleStyle($index) }}'></div>"
 					+ "  </div>"
 					+ "</div>"
-					//+ "<div class='rgchooser-Reset' ng-click='resetRgChooser()'>Reset</div>"
 					+ "</div></div>",
 					rgChooserTemplate = angular.element(template);
 
@@ -594,6 +593,17 @@ angular.module("radialgradient.module",["colorpicker.module"])
               				controlsUpdateFunc();
               			}
             		});
+            		scope.$watch("rgConfigured",function(newVal){
+            			if(angular.isDefined(newVal)){
+            				scope.rgdata = newVal;
+            				//save a few versions of rgdata
+            				if(scope.rgdata_temps.length<2 || !scope.inArray(scope.rgdata,scope.rgdata_temps)){
+            					scope.rgdata_temps.push(scope.rgdata);
+            				}
+            				scope.computeColorArray();
+              				controlsUpdateFunc();
+            			}
+            		})
           		}else{
           			//save a few versions of rgdata
           			if(scope.rgdata_temps.length<2 || !scope.inArray(scope.rgdata,scope.rgdata_temps)){
@@ -670,10 +680,14 @@ angular.module("radialgradient.module",["colorpicker.module"])
 
               			if (attrs.rgChooserIsOpen) {
                 			scope[attrs.rgChooserIsOpen] = true;
-                			if (!scope.$$phase) {
+                			/*if (!scope.$$phase) {
                   				scope.$digest(); //trigger the watcher to fire
-                			}
+                			}*/
               			}
+              			//trigger the watcher to fire
+              			if (!scope.$$phase) {
+                  			scope.$digest(); //trigger the watcher to fire
+                		}
             		}
           		};
 
