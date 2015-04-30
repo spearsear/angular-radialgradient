@@ -592,7 +592,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
             				}
               				controlsUpdateFunc();
               			}
-            		});
+            		},true);
             		scope.$watch("rgConfigured",function(newVal){
             			if(angular.isDefined(newVal)){
             				scope.rgdata = newVal;
@@ -603,7 +603,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
             				scope.computeColorArray();
               				controlsUpdateFunc();
             			}
-            		})
+            		},true);
           		}else{
           			//save a few versions of rgdata
           			if(scope.rgdata_temps.length<2 || !scope.inArray(scope.rgdata,scope.rgdata_temps)){
