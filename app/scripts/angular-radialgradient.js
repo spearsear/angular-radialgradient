@@ -145,7 +145,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				},true);
 
 				// this watch is only needed when jquery is loaded, jqlite does not need this
-				if(typeof jQuery != 'undefined'){
+				/*if(typeof jQuery != 'undefined'){
 					scope.$watch(function(){return scope.computeGradientTransform()}, function(value) {
 						//jquery lowercase gradientTransform to gradienttransform, need to convert it back, geez 
         				//document.getElementById('rg-grad-1').setAttribute("gradientTransform", value);
@@ -153,7 +153,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
         				//$document.find('#rg-grad-1')[0].setAttribute("gradientTransform", value);
         				$document.find('.rgchooser').find('radialGradient')[0].setAttribute("gradientTransform", value);
       				});
-				}
+				}*/
 
 				scope.$on("colorpicker-selected",function(event,data){
 					//one of the stop colors changed
@@ -326,7 +326,9 @@ angular.module("radialgradient.module",["colorpicker.module"])
     				.on("dragend", dragended);
 
       			function dragstarted(d) {
- 	 				d3.event.sourceEvent.stopPropagation();
+      				if(d3.event.sourceEvent){
+ 	 					d3.event.sourceEvent.stopPropagation();
+ 	 				}
   					d3.select(this).classed("dragging", true);
 				}
 
