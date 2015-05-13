@@ -551,7 +551,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 						});
 				};//end controlsUpdateFunc
 
-				scope.$watch("d3",function(newVal,oldVal){
+				scope.$watch("d3.version",function(newVal,oldVal){
 					if(typeof d3 != "undefined"){
 						//render svg when d3 is available
 						svg = d3.select(".rgchooser svg.svg-Viewer")
