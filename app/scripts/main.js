@@ -1,10 +1,11 @@
 angular.module("rgDemoApp",["radialgradient.module"])
-	.controller("mainCtrl",function($scope){
+	.controller("mainCtrl",['$scope','$window',function($scope,$window){
 		//the configured result is stored in rgConfigured
 		$scope.viewFunc = function(){
 			//execute this func after rgChooser is configured
 			rg_eue_func();
 		}
+		$scope.d3 = $window.d3;
 		$scope.rgConfigured = {"width":276,"height":276,"center":{"x":0.5036231884057971,"y":0.8623188405797102,"name":"center","ctrl_color":"orange"},"focal":{"x":0.4963768115942029,"y":0.009130434782608698,"name":"focal","ctrl_color":"pink"},"radius":0.15217391304347827,"transform":{"rotate":0,"translate":{"x":0,"y":0,"name":"translate","ctrl_color":"blue"},"scale":{"x":1,"y":1,"name":"scale","ctrl_color":"red"}},"opacity":0.8572463768115942,"stops":[{"offset":"0","color":"rgb(72,18,227)","opacity":0.8572463768115942},{"offset":"0.4","color":"rgb(18,48,153)","opacity":0.5143478260869565},{"offset":"0.9","color":"rgb(64,76,122)","opacity":0.0857246376811594},{"offset":"1","color":"rgb(37,56,122)","opacity":0}],"colors":[{"original":true,"color":"#4812e3"},{"original":false,"color":"#3b1ad1"},{"original":false,"color":"#2d21be"},{"original":false,"color":"#2029ac"},{"original":true,"color":"#123099"},{"original":false,"color":"#1b3693"},{"original":false,"color":"#243b8d"},{"original":false,"color":"#2e4186"},{"original":false,"color":"#374680"},{"original":true,"color":"#404c7a"},{"original":true,"color":"#25387a"}]};
 		$scope.rgConfigured2 = {
 			width:276,
@@ -169,4 +170,4 @@ angular.module("rgDemoApp",["radialgradient.module"])
   				});
 		}//end demo
 		setInterval(demo,2000);
-	})
+	}])
