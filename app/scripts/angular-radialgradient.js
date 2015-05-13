@@ -7,6 +7,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 			require: '?ngModel',
 			restrict: "EA",
 			scope: {
+				d3: '=d3',
 				rgConfigured: '=ngModel',
 				runAfter: '&runAfter'
 			},
@@ -583,7 +584,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 						scope.defineScalesAndDrag();
 						controlsEnterFunc();
 					}
-				});
+				},true);
 
 				//after d3 setup
 				//make a copy we can reset to
