@@ -48,7 +48,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				}
 			        scope.clearDirty = function(){
 				    scope.rgdata.dirty = false;
-				    scope.rgdata = scope.rgdata_default;
+				    scope.rgdata = angular.copy(scope.rgdata_default);
 				}
 			        scope.isDirty = function(){
 				    return scope.rgdata.dirty;
