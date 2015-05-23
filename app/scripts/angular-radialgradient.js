@@ -20,7 +20,7 @@ angular.module("radialgradient.module",["colorpicker.module"])
 					height: 256 + scope.margin.top + scope.margin.bottom,
 					center: {x: 0.5, y:0.5},
 					focal: {x: 0.5, y: 0.5},
-					radius: 0.5,
+					radius: 0.1,
 					transform: {
 						rotate: 0,
 						translate: {
@@ -47,8 +47,12 @@ angular.module("radialgradient.module",["colorpicker.module"])
 				    scope.rgdata.dirty = true;
 				}
 			        scope.clearDirty = function(){
-				    scope.rgdata.dirty = false;
-				    scope.rgdata = angular.copy(scope.rgdata_default);
+				    //ngModel dirty change from true to false would trigger this func to set model value to default rgdata
+				    //user may want to keep the current rgdata so no need to do this
+				    if(false){
+             				ngModel.$setViewValue(angular.copy(scope.rgdata_default));
+             				ngModel.$render();
+				    }
 				}
 			        scope.isDirty = function(){
 				    return scope.rgdata.dirty;
