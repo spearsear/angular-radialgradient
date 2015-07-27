@@ -233,6 +233,12 @@ angular.module("radialgradient.module",["colorpicker.module"])
 
 				target.append(rgChooserTemplate);
 
+			    //disable select
+			    rgChooserTemplate.onselectstart = function(){return false;};
+			    rgChooserTemplate.unselectable = "on";
+			    rgChooserTemplate.css('-moz-user-select', 'none'); 
+                            rgChooserTemplate.css('-webkit-user-select', 'none'); 
+
           		//setup and render rgChooser view in d3
 				if(attrs.stopcolor1 || attrs.stopcolor2){
 					if(attrs.stopcolor1){
